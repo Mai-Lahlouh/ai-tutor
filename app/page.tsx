@@ -1,12 +1,24 @@
 "use client";
 
+import { useEffect } from "react";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import RecentLessons from "./components/RecentLessons";
 import Stats from "./components/Stats";
 import UploadCard from "./components/UploadCard";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col justify-between bg-gray-100 p-6">
       <Navbar />
@@ -24,7 +36,9 @@ export default function Home() {
 
         {/* Recent Lessons */}
         <section className="mb-10">
-          <h2 className="text-gray-700 text-2xl font-semibold mb-4">Recent Lessons</h2>
+          <h2 className="text-gray-700 text-2xl font-semibold mb-4">
+            Recent Lessons
+          </h2>
           <RecentLessons />
         </section>
 

@@ -1,33 +1,32 @@
-import mongoose, { Schema, Document, model } from "mongoose";
+import mongoose from "mongoose";
 
-export interface IOption {
-  text: string;
-  isCorrect: boolean;
-}
-
-export interface IQuiz extends Document {
-  lesson: mongoose.Types.ObjectId;
-  question: string;
-  options: IOption[];
-  explanation: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const OptionSchema = new Schema<IOption>({
-  text: { type: String, required: true },
-  isCorrect: { type: Boolean, required: true },
+const QuizSchema = new mongoose.Schema({
+  lessonId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Lesson",
+    required: true,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  title: {
+    type: String,
+    required: true,
+  },
+  questions: [
+    {
+      question: { type: String, required: true },
+      type: { type: String, enum: ["mcq", "short-answer"], required: true },
+      options: [{ type: String }],
+      answer: { type: String, required: true },
+    },
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-const QuizSchema = new Schema<IQuiz>(
-  {
-    lesson: { type: Schema.Types.ObjectId, ref: "Lesson", required: true },
-    question: { type: String, required: true },
-    options: { type: [OptionSchema], required: true },
-    explanation: { type: String, required: true },
-  },
-  { timestamps: true }
-);
-
-const Quiz = mongoose.models.Quiz || model<IQuiz>("Quiz", QuizSchema);
-export default Quiz;
+export default mongoose.models.Quiz || mongoose.model("Quiz", QuizSchema);

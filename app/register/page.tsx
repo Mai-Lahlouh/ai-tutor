@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RegisterForm, ApiResponse } from "@/app/types/auth.types";
+import Footer from "../components/Footer";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -44,13 +46,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-gray-50">
+    <div className="min-h-screen flex flex-col justify-between bg-gray-100">
       <div className="flex-grow flex items-center justify-center">
         <form
           onSubmit={handleRegister}
           className="bg-white p-8 rounded shadow w-96 space-y-4"
         >
-          <h2 className="text-2xl font-semibold text-red-950">Register</h2>
+          <h2 className="text-2xl font-semibold text-gray-950">Register</h2>
           <input
             type="text"
             name="name"
@@ -78,17 +80,20 @@ export default function RegisterPage() {
           {error && <p className="text-red-500">{error}</p>}
           <button
             type="submit"
-            className="w-full bg-red-950 text-white p-2 rounded"
+            className="w-full bg-blue-950 text-white p-2 rounded"
           >
             Create Account
           </button>
+
+          <div className="text-center text-gray-700 text-sm">
+            Already have an account?{" "}
+            <Link href="/login" className="text-blue-600 hover:underline">
+              Login
+            </Link>
+          </div>
         </form>
       </div>
-
-      {/* Footer */}
-      <footer className="text-center text-sm text-gray-800 p-4">
-        &copy; 2025 Mai Lahlouh. All rights reserved.
-      </footer>
+      <Footer />
     </div>
   );
 }

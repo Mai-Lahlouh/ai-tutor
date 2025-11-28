@@ -9,8 +9,8 @@ import Footer from "../../components/Footer";
 export default function LessonPage() {
   const router = useRouter();
 
-  const params = useParams(); // hook provides id
-  const { id } = params as { id: string }; // cast to string
+  const params = useParams();
+  const { id } = params as { id: string };
 
   // TODO: Fetch lesson content and quizzes from API using `id`
   const lesson = {

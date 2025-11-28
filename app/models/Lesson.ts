@@ -1,23 +1,34 @@
-import mongoose, { Schema, Document, model } from "mongoose";
+import mongoose from "mongoose";
 
-export interface ILesson extends Document {
-  title: string;
-  content?: string; 
-  pdfUrl?: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const LessonSchema = new Schema<ILesson>(
-  {
-    title: { type: String, required: true },
-    content: { type: String },
-    pdfUrl: { type: String },
-    difficulty: { type: String, enum: ["Easy", "Medium", "Hard"], default: "Easy" },
+const LessonSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   },
-  { timestamps: true }
-);
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  content: {
+    type: String,
+    default: null,
+  },
+  pdfUrl: {
+    type: String,
+    default: null,
+  },
+  difficulty: {
+    type: String,
+    enum: ["easy", "medium", "hard"],
+    default: "easy",
+  },
+  numQuestions: { type: Number, default: 5 },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-const Lesson = mongoose.models.Lesson || model<ILesson>("Lesson", LessonSchema);
-export default Lesson;
+export default mongoose.models.Lesson || mongoose.model("Lesson", LessonSchema);

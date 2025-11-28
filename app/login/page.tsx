@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoginForm, ApiResponse } from "@/app/types/auth.types";
+import Footer from "../components/Footer";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,13 +53,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-gray-50">
+    <div className="min-h-screen flex flex-col justify-between bg-gray-100">
       <div className="flex-grow flex items-center justify-center">
         <form
           onSubmit={handleLogin}
           className="bg-white p-8 rounded shadow w-96 space-y-4"
         >
-          <h2 className="text-2xl font-semibold text-red-950">Login</h2>
+          <h2 className="text-2xl font-semibold text-gray-950">Login</h2>
           <input
             type="email"
             name="email"
@@ -79,16 +81,20 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-red-950 text-white p-2 rounded"
+            className="w-full bg-blue-950 text-white p-2 rounded"
           >
             Login
           </button>
+
+          <div className="text-center text-gray-700 text-sm">
+            Don't have an account?{" "}
+            <Link href="/register" className="text-blue-950 hover:underline">
+              Register
+            </Link>
+          </div>
         </form>
       </div>
-      {/* Footer */}
-      <footer className="text-center text-sm text-gray-800 p-4">
-        &copy; 2025 Mai Lahlouh. All rights reserved. reserved.
-      </footer>
+      <Footer />
     </div>
   );
 }
