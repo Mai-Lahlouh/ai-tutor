@@ -3,13 +3,18 @@
 
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { useRouter } from "next/navigation";
 
 export default function UploadCard() {
+  const router = useRouter();
+
   const [inputType, setInputType] = useState<"file" | "text">("file");
+  const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [difficulty, setDifficulty] = useState("easy");
   const [numQuestions, setNumQuestions] = useState(5);
   const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
@@ -18,22 +23,54 @@ export default function UploadCard() {
         [".docx"],
       "text/plain": [".txt"],
     },
+    onDrop: (acceptedFiles) => setFile(acceptedFiles[0]),
   });
-  const handleGenerate = () => {
-    if (inputType === "file" && !getInputProps().value) {
+
+  const handleGenerate = async () => {
+    if (inputType === "file" && !file) {
       alert("Please upload a file");
       return;
     }
+
     if (inputType === "text" && text.trim() === "") {
       alert("Please enter text");
       return;
     }
+
     setLoading(true);
-    // Call backend API here to generate lesson + quiz
-    setTimeout(() => {
+
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+
+      formData.append("title", title);
+      formData.append("difficulty", difficulty);
+      formData.append("numQuestions", numQuestions.toString());
+
+      if (inputType === "text") formData.append("text", text);
+      if (inputType === "file" && file) formData.append("file", file);
+
+      const res = await fetch("/api/lessons", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        alert(data.error);
+        setLoading(false);
+        return;
+      }
+
+      // Redirect to quiz page
+      router.push(`/quiz/${data.lesson._id}`);
+    } catch (err) {
+      alert("Something went wrong");
+    } finally {
       setLoading(false);
-      alert("Lesson and Quiz generated successfully!");
-    }, 2000);
+    }
   };
 
   return (
@@ -42,7 +79,16 @@ export default function UploadCard() {
         Generate Lesson & Quiz
       </h3>
 
-      {/* Toggle between File Upload and Text Input */}
+      {/* Lesson Title */}
+      <input
+        type="text"
+        placeholder="Lesson title"
+        className="mb-4 w-full border border-gray-300 rounded-md p-2 text-gray-700"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+
+      {/* Toggle between File and Text */}
       <div className="mb-4 flex bg-gray-200 rounded-full overflow-hidden w-max">
         <button
           className={`px-4 py-2 rounded-full transition-all duration-300 ${
@@ -52,6 +98,7 @@ export default function UploadCard() {
         >
           Upload File
         </button>
+
         <button
           className={`px-4 py-2 rounded-full transition-all duration-300 ${
             inputType === "text" ? "bg-blue-950 text-white" : "text-gray-700"
@@ -62,7 +109,7 @@ export default function UploadCard() {
         </button>
       </div>
 
-      {/* File Upload with Drag & Drop */}
+      {/* File Upload */}
       {inputType === "file" && (
         <div
           {...getRootProps()}
@@ -70,12 +117,12 @@ export default function UploadCard() {
         >
           <input {...getInputProps()} />
           <p className="text-gray-500 text-center">
-            Drag & drop your file here, or click to select
+            {file ? file.name : "Drag & drop or click to choose file"}
           </p>
         </div>
       )}
 
-      {/* Text Area */}
+      {/* Text Input */}
       {inputType === "text" && (
         <textarea
           placeholder="Paste your text here..."
@@ -85,7 +132,7 @@ export default function UploadCard() {
         ></textarea>
       )}
 
-      {/* Difficulty Dropdown */}
+      {/* Difficulty */}
       <select
         className="mb-4 w-full border border-gray-300 rounded-md p-2 text-gray-700"
         value={difficulty}
@@ -99,11 +146,11 @@ export default function UploadCard() {
       {/* Number of Questions */}
       <input
         type="number"
+        min={1}
         placeholder="Number of questions"
         className="mb-4 w-full border border-gray-300 rounded-md p-2 text-gray-700"
         value={numQuestions}
-        onChange={(e) => setNumQuestions(parseInt(e.target.value))}
-        min={1}
+        onChange={(e) => setNumQuestions(Number(e.target.value))}
       />
 
       {/* Generate Button */}
@@ -116,6 +163,12 @@ export default function UploadCard() {
       >
         {loading ? "Generating..." : "Generate Quiz"}
       </button>
+
+      {loading && (
+        <p className="text-center mt-3 text-blue-600 font-medium">
+          Processing your lesson... please wait
+        </p>
+      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import Quiz from "@/app/models/Quiz";
+import QuizAttempt from "@/app/models/QuizAttempt";
 
 export async function GET(
   req: NextRequest,
@@ -31,9 +32,19 @@ export async function GET(
     if (!lesson)
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
 
-    const quizzes = await Quiz.find({ lessonId: lesson._id });
+    const quizzes = await Quiz.find({ lessonId }).lean();
+    const quizzesWithAttempts = await Promise.all(
+      quizzes.map(async (q) => {
+        const attempts = await QuizAttempt.find({ quizId: q._id, userId })
+          .sort({ submittedAt: -1 })
+          .limit(8)
+          .lean();
 
-    return NextResponse.json({ lesson, quizzes });
+        return { ...q, attempts };
+      })
+    );
+
+    return NextResponse.json({ lesson, quizzes: quizzesWithAttempts });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
