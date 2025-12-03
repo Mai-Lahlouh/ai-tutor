@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import Quiz from "@/app/models/Quiz";
 import QuizAttempt from "@/app/models/QuizAttempt";
+import { QuizQuestion, QuizResult } from "@/app/types/index.types";
 
 export async function POST(
   req: NextRequest,
@@ -30,7 +31,7 @@ export async function POST(
     if (!quiz)
       return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
 
-    const results = quiz.questions.map((q, index) => {
+    const results = quiz.questions.map((q: QuizQuestion, index: number) => {
       const userAnswer = answers[index]?.answer ?? "";
 
       let isCorrect = false;
@@ -52,7 +53,7 @@ export async function POST(
       };
     });
 
-    const score = results.filter((r) => r.isCorrect).length;
+    const score = results.filter((r: QuizResult) => r.isCorrect).length;
 
     const attempt = await QuizAttempt.create({
       quizId,

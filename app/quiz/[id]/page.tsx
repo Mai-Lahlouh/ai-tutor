@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import { QuizQuestion } from "@/app/types/index.types";
 
 export default function QuizPage() {
   const params = useParams();
@@ -65,8 +66,9 @@ export default function QuizPage() {
     const token = localStorage.getItem("token");
 
     const answersArray = Object.entries(answers).map(([qid, ans]) => ({
-      answer: typeof ans === "string" ? ans : ans.option ?? String(ans),
+      answer: ans,
     }));
+    const savedPage = 1;
 
     try {
       const res = await fetch(`/api/quizzes/${quiz._id}/submit`, {
@@ -88,6 +90,7 @@ export default function QuizPage() {
       console.log("Quiz saved:", data.attempt);
 
       setSubmitted(true);
+      setCurrentPage(savedPage);
     } catch (err) {
       console.error(err);
     }
@@ -125,7 +128,7 @@ export default function QuizPage() {
           />
         </div>
 
-        {currentQuestions.map((q, index) => {
+        {currentQuestions.map((q: QuizQuestion, index: number) => {
           const qid = startIndex + index + 1;
 
           const userAnswer = answers[qid] || "";
@@ -155,45 +158,45 @@ export default function QuizPage() {
               {q.type === "mcq" ? (
                 <div className="grid grid-cols-2 gap-2">
                   {q.options.map((opt, idx) => {
-                    const selected = answers[qid] === opt;
+                    const letter = String.fromCharCode(65 + idx); // A, B, C...
+                    const labeledOption = `${letter}) ${opt}`;
+
+                    const selected = answers[qid] === labeledOption;
                     const correct =
                       submitted &&
-                      (q.type === "mcq"
-                        ? opt.split(")")[0].trim().toLowerCase() ===
-                          q.answer.trim().toLowerCase()
-                        : opt.trim().toLowerCase() ===
-                          q.answer.trim().toLowerCase());
+                      labeledOption.split(")")[0].trim().toLowerCase() ===
+                        q.answer.trim().toLowerCase();
+
                     return (
                       <label
                         key={idx}
                         className={`p-3 border rounded-lg cursor-pointer transition
-                            ${
-                              selected
-                                ? "bg-blue-600 text-white border-blue-600"
-                                : "text-gray-700 border-gray-300"
-                            }
-                            ${
-                              submitted && correct
-                                ? "bg-green-600 text-white border-green-600"
-                                : ""
-                            }
-                            ${
-                              submitted && selected && !correct
-                                ? "bg-red-600 text-white border-red-600"
-                                : ""
-                            }
-                        `}
+        ${
+          selected
+            ? "bg-blue-600 text-white border-blue-600"
+            : "text-gray-700 border-gray-300"
+        }
+        ${
+          submitted && correct ? "bg-green-600 text-white border-green-600" : ""
+        }
+        ${
+          submitted && selected && !correct
+            ? "bg-red-600 text-white border-red-600"
+            : ""
+        }
+      `}
                       >
                         <input
                           type="radio"
                           name={`q-${qid}`}
-                          value={opt}
+                          value={labeledOption}
                           className="hidden"
                           checked={selected}
-                          onChange={() => handleChange(qid, opt)}
+                          onChange={() => handleChange(qid, labeledOption)}
                           disabled={submitted}
                         />
-                        {opt}
+
+                        {labeledOption}
                       </label>
                     );
                   })}
@@ -204,12 +207,16 @@ export default function QuizPage() {
                   type="text"
                   className={`border rounded-md p-2 w-full text-gray-600 transition
                     ${
-                      submitted && answers[qid] === q.answer
+                      submitted &&
+                      answers[qid]?.trim().toLowerCase() ===
+                        q.answer.trim().toLowerCase()
                         ? "border-green-600 bg-green-100"
                         : ""
                     }
                     ${
-                      submitted && answers[qid] !== q.answer
+                      submitted &&
+                      answers[qid]?.trim().toLowerCase() !==
+                        q.answer.trim().toLowerCase()
                         ? "border-red-600 bg-red-100"
                         : ""
                     }
@@ -235,7 +242,7 @@ export default function QuizPage() {
           <button
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
             disabled={currentPage === 1}
-            className="bg-gray-300 px-4 py-2 rounded-lg disabled:opacity-50"
+            className="disable:bg-gray-300 bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg disabled:opacity-50"
           >
             Previous
           </button>
@@ -247,7 +254,7 @@ export default function QuizPage() {
           <button
             onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className="bg-gray-300 px-4 py-2 rounded-lg disabled:opacity-50"
+            className="disable:bg-gray-300 bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg disabled:opacity-50"
           >
             Next
           </button>

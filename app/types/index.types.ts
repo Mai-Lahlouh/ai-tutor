@@ -17,3 +17,17 @@ export interface Attempt {
   score: number;
   createdAt: string;
 }
+
+export interface QuizQuestion {
+  question: string;
+  type: "mcq" | "short";
+  options: string[];
+  answer: string;
+}
+
+export interface QuizResult {
+  question: string;
+  answer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+};
