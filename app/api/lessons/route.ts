@@ -8,6 +8,7 @@ import { execFile } from "child_process";
 import path from "path";
 import Groq from "groq-sdk";
 import Quiz from "@/app/models/Quiz";
+import os from "os";
 
 export async function POST(req: NextRequest) {
   await connectDB();
@@ -35,7 +36,9 @@ export async function POST(req: NextRequest) {
     if (file) {
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const tempFilePath = path.join(process.cwd(), `temp_${file.name}`);
+      const tempDir = process.env.VERCEL === "1" ? "/tmp" : os.tmpdir();
+
+      const tempFilePath = path.join(tempDir, file.name);
 
       await writeFile(tempFilePath, buffer);
 
