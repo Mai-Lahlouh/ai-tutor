@@ -45,10 +45,23 @@ export async function POST(req: NextRequest) {
       // Run Python script
       content = await new Promise<string>((resolve, reject) => {
         execFile(
-          "python",
-          ["./app/scripts/convert_file.py", tempFilePath],
+          "python3",
+          [
+            path.join(process.cwd(), "app/scripts/convert_file.py"),
+            tempFilePath,
+          ],
           (error, stdout, stderr) => {
             unlink(tempFilePath).catch(() => {});
+
+            // 🔥 LOG EVERYTHING for Vercel
+            console.log("=== PYTHON STDOUT ===");
+            console.log(stdout);
+
+            console.log("=== PYTHON STDERR ===");
+            console.error(stderr);
+
+            console.log("=== PYTHON ERROR ===");
+            console.error(error);
 
             if (error) {
               console.error(stderr);
