@@ -65,6 +65,7 @@
 - Support for multiple file types and larger lessons.
   
 ## Contact
-
-Mai Lahlouh
-[nlahlouh09@gmail.com]
+For any inquiries or feedback, please reach out to me at [Email](mailto:nlahlouh09@gmail.com).
+  
+## Author
+Mai Lahlouh - 5th Dec, 2025
